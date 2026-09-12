@@ -55,34 +55,11 @@ class LearningHomeScreen extends ConsumerWidget {
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 12),
-              SegmentedButton<String>(
-                segments: [
-                  ButtonSegment(
-                    value: 'cards',
-                    icon: const Icon(Icons.style_rounded),
-                    label: Text(l.modeCards),
-                  ),
-                  ButtonSegment(
-                    value: 'quiz',
-                    icon: const Icon(Icons.checklist_rounded),
-                    label: Text(l.modeQuiz),
-                  ),
-                  ButtonSegment(
-                    value: 'typing',
-                    icon: const Icon(Icons.keyboard_alt_rounded),
-                    label: Text(l.modeTyping),
-                  ),
-                  ButtonSegment(
-                    value: 'mixed',
-                    icon: const Icon(Icons.shuffle_rounded),
-                    label: Text(l.modeMixed),
-                  ),
-                ],
-                selected: {mode},
-                showSelectedIcon: false,
-                onSelectionChanged: (selection) => ref
+              LearningModeSelector(
+                selected: mode,
+                onSelected: (selection) => ref
                     .read(settingsControllerProvider.notifier)
-                    .setSettings((s) => s.copyWith(lastMode: selection.first)),
+                    .setSettings((s) => s.copyWith(lastMode: selection)),
               ),
               const SizedBox(height: 20),
               FilledButton.icon(
@@ -104,6 +81,44 @@ class LearningHomeScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class LearningModeSelector extends StatelessWidget {
+  const LearningModeSelector({
+    required this.selected,
+    required this.onSelected,
+    super.key,
+  });
+
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final modes = [
+      ('cards', Icons.style_rounded, l.modeCards),
+      ('quiz', Icons.checklist_rounded, l.modeQuiz),
+      ('typing', Icons.keyboard_alt_rounded, l.modeTyping),
+      ('mixed', Icons.shuffle_rounded, l.modeMixed),
+    ];
+    // Wrap whole choices onto a new row instead of squeezing four labels into
+    // equal-width segments. Text keeps its natural size, including text scaling.
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final (value, icon, label) in modes)
+          ChoiceChip(
+            avatar: Icon(icon, size: 20),
+            label: Text(label),
+            selected: selected == value,
+            showCheckmark: false,
+            onSelected: (_) => onSelected(value),
+          ),
+      ],
     );
   }
 }

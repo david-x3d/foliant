@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @modeCards.
   ///
   /// In de, this message translates to:
-  /// **'Karteikarte'**
+  /// **'Karteikarten'**
   String get modeCards;
 
   /// No description provided for @modeQuiz.
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @learnKnown.
   ///
   /// In de, this message translates to:
-  /// **'Kennt'**
+  /// **'Gewusst'**
   String get learnKnown;
 
   /// No description provided for @learnUnsure.
@@ -677,7 +677,7 @@ abstract class AppLocalizations {
   /// No description provided for @learnUnknown.
   ///
   /// In de, this message translates to:
-  /// **'Nicht gekannt'**
+  /// **'Nicht gewusst'**
   String get learnUnknown;
 
   /// No description provided for @learnTypePrompt.

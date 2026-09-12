@@ -32,7 +32,7 @@
   "homeEmpty": "Noch keine Vokabeln fällig",
   "homeEmptyAction": "Set öffnen",
   "modeTitle": "Abfrage-Modus",
-  "modeCards": "Karteikarte",
+  "modeCards": "Karteikarten",
   "modeQuiz": "Quiz",
   "modeTyping": "Tippen",
   "modeMixed": "Gemischt",
@@ -94,9 +94,9 @@
   "aiTestInvalidKey": "Der API-Key wurde abgelehnt.",
   "aiSaved": "KI-Einstellungen gespeichert.",
   "learnReveal": "Antwort zeigen",
-  "learnKnown": "Kennt",
+  "learnKnown": "Gewusst",
   "learnUnsure": "Unsicher",
-  "learnUnknown": "Nicht gekannt",
+  "learnUnknown": "Nicht gewusst",
   "learnTypePrompt": "Tippe die Antwort",
   "learnSubmit": "Prüfen",
   "learnAlmost": "Fast richtig",
@@ -120,4 +120,3 @@
   "exportDone": "Export erstellt.",
   "importDone": "Import abgeschlossen."
 }
-

@@ -107,7 +107,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get modeTitle => 'Abfrage-Modus';
 
   @override
-  String get modeCards => 'Karteikarte';
+  String get modeCards => 'Karteikarten';
 
   @override
   String get modeQuiz => 'Quiz';
@@ -296,13 +296,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get learnReveal => 'Antwort zeigen';
 
   @override
-  String get learnKnown => 'Kennt';
+  String get learnKnown => 'Gewusst';
 
   @override
   String get learnUnsure => 'Unsicher';
 
   @override
-  String get learnUnknown => 'Nicht gekannt';
+  String get learnUnknown => 'Nicht gewusst';
 
   @override
   String get learnTypePrompt => 'Tippe die Antwort';

@@ -7,22 +7,17 @@ import '../data/ai_provider_repository.dart';
 
 class AiSettingsScreen extends ConsumerStatefulWidget {
   const AiSettingsScreen({super.key});
-
   @override
   ConsumerState<AiSettingsScreen> createState() => _AiSettingsScreenState();
 }
 
 class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
-  final displayName = TextEditingController();
   final baseUrl = TextEditingController();
   final model = TextEditingController();
-  final apiVersion = TextEditingController();
-  final extraHeaders = TextEditingController();
-  final orgId = TextEditingController();
-  final projectId = TextEditingController();
   final apiKey = TextEditingController();
+  AiEndpoint endpoint = AiEndpoint.openAi;
   bool loading = true;
-  bool testing = false;
+  bool working = false;
   bool obscure = true;
   String? message;
   bool success = false;
@@ -30,114 +25,86 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(_load);
+    _load();
   }
 
   Future<void> _load() async {
-    final config = await ref.read(aiRepositoryProvider).load();
-    displayName.text = config.displayName;
-    baseUrl.text = config.baseUrl;
-    model.text = config.model;
-    apiVersion.text = config.apiVersion;
-    extraHeaders.text = config.extraHeaders;
-    orgId.text = config.orgId;
-    projectId.text = config.projectId;
-    if (mounted) setState(() => loading = false);
+    try {
+      final config = await ref.read(aiRepositoryProvider).load();
+      if (!mounted) return;
+      endpoint = config.endpoint;
+      baseUrl.text = config.baseUrl;
+      model.text = config.model;
+    } catch (_) {
+      if (!mounted) return;
+      message = 'Die KI-Einstellungen konnten nicht geladen werden.';
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
   }
 
   AiProviderConfig get config => AiProviderConfig(
-    displayName: displayName.text.trim(),
+    endpoint: endpoint,
     baseUrl: baseUrl.text.trim(),
     model: model.text.trim(),
-    apiVersion: apiVersion.text.trim(),
-    extraHeaders: extraHeaders.text.trim(),
-    orgId: orgId.text.trim(),
-    projectId: projectId.text.trim(),
   );
 
-  void _applyPreset(String preset) {
+  void _selectEndpoint(AiEndpoint next) {
+    if (next == endpoint) return;
     setState(() {
+      endpoint = next;
       message = null;
       success = false;
-      if (preset == 'google') {
-        displayName.text = 'Google Gemini';
-        baseUrl.text = 'https://generativelanguage.googleapis.com/v1beta';
-        model.text = 'gemini-2.5-flash';
-        apiVersion.text = 'v1beta';
-        extraHeaders.text = '{}';
-        orgId.clear();
-        projectId.clear();
-      } else {
-        displayName.text = 'OpenAI-kompatibel';
-        baseUrl.text = 'https://api.openai.com/v1';
-        model.text = 'gpt-4o-mini';
-        apiVersion.clear();
-        extraHeaders.text = '{}';
-        orgId.clear();
-        projectId.clear();
-      }
-    });
-  }
-  Future<void> _save() async {
-    final l = AppLocalizations.of(context)!;
-    await ref
-        .read(aiRepositoryProvider)
-        .save(config, apiKey: apiKey.text.isEmpty ? null : apiKey.text);
-    if (!mounted) return;
-    apiKey.clear();
-    setState(() {
-      success = true;
-      message = l.aiSaved;
+      baseUrl.text = next == AiEndpoint.gemini
+          ? 'https://generativelanguage.googleapis.com/v1beta'
+          : 'https://api.openai.com/v1';
+      model.text = next == AiEndpoint.gemini
+          ? 'gemini-2.5-flash'
+          : 'gpt-4o-mini';
     });
   }
 
-  Future<void> _test() async {
+  Future<void> _save({bool test = false}) async {
     final l = AppLocalizations.of(context)!;
     setState(() {
-      testing = true;
+      working = true;
       message = null;
+      success = false;
     });
     try {
       await ref
           .read(aiRepositoryProvider)
-          .save(config, apiKey: apiKey.text.isEmpty ? null : apiKey.text);
-      await ref.read(aiClientProvider).testConnection();
+          .save(
+            config,
+            apiKey: apiKey.text.trim().isEmpty ? null : apiKey.text.trim(),
+          );
+      if (!mounted) return;
+      apiKey.clear();
+      if (test) await ref.read(aiClientProvider).testConnection();
       if (!mounted) return;
       setState(() {
         success = true;
-        message = l.aiTestSuccess;
+        message = test ? l.aiTestSuccess : l.aiSaved;
       });
     } on AiCallException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        success = false;
-        message = switch (e.kind) {
-          AiErrorKind.noKey => l.aiTestNoKey,
-          AiErrorKind.invalidKey => l.aiTestInvalidKey,
-          AiErrorKind.rateLimit => l.aiTestRateLimit,
-          AiErrorKind.network => l.aiTestNetwork,
-          _ => e.message,
-        };
-      });
+      if (mounted) setState(() => message = e.message);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => message =
+              'Die KI-Einstellungen konnten nicht gespeichert oder getestet werden. Bitte erneut versuchen.',
+        );
+      }
     } finally {
-      if (mounted) setState(() => testing = false);
+      if (mounted) setState(() => working = false);
     }
   }
 
   @override
   void dispose() {
-    for (final c in [
-      displayName,
-      baseUrl,
-      model,
-      apiVersion,
-      extraHeaders,
-      orgId,
-      projectId,
-      apiKey,
-    ]) {
-      c.dispose();
-    }
+    baseUrl.dispose();
+    model.dispose();
+    apiKey.dispose();
     super.dispose();
   }
 
@@ -151,49 +118,58 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text(
-                  'Voreinstellungen',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    ActionChip(
-                      avatar: const Icon(Icons.auto_awesome_rounded, size: 18),
-                      label: const Text('Google Gemini'),
-                      onPressed: () => _applyPreset('google'),
+                DropdownButtonFormField<AiEndpoint>(
+                  initialValue: endpoint,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'API-Endpunkt'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: AiEndpoint.openAi,
+                      child: Text('OpenAI-kompatibel'),
                     ),
-                    ActionChip(
-                      avatar: const Icon(Icons.hub_rounded, size: 18),
-                      label: const Text('OpenAI-kompatibel'),
-                      onPressed: () => _applyPreset('openai'),
+                    DropdownMenuItem(
+                      value: AiEndpoint.gemini,
+                      child: Text('Google Gemini'),
                     ),
                   ],
+                  onChanged: working
+                      ? null
+                      : (value) {
+                          if (value != null) _selectEndpoint(value);
+                        },
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: displayName,
-                  decoration: InputDecoration(labelText: l.aiProviderName),
-                ),
-                const SizedBox(height: 10),
-                TextField(
                   controller: baseUrl,
+                  enabled: !working,
                   keyboardType: TextInputType.url,
-                  decoration: InputDecoration(labelText: l.aiBaseUrl),
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: const InputDecoration(
+                    labelText: 'URL',
+                    helperText: 'Basis-URL oder vollständige API-Adresse',
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: model,
+                  enabled: !working,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: InputDecoration(labelText: l.aiModel),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: apiKey,
+                  enabled: !working,
                   obscureText: obscure,
                   enableSuggestions: false,
                   autocorrect: false,
                   decoration: InputDecoration(
-                    labelText: l.aiApiKey,
-                    hintText: 'Leer lassen, um gespeicherten Key zu behalten',
+                    labelText: 'API-Schlüssel',
+                    helperText:
+                        'Leer lassen, um den gespeicherten Schlüssel zu behalten.',
+                    helperMaxLines: 2,
                     suffixIcon: IconButton(
                       onPressed: () => setState(() => obscure = !obscure),
                       icon: Icon(
@@ -204,46 +180,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: model,
-                  decoration: InputDecoration(
-                    labelText: l.aiModel,
-                    hintText:
-                        'gpt-4o-mini, gpt-4.1-mini, claude-sonnet, gemini-flash, grok-*, lokal',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: apiVersion,
-                  decoration: InputDecoration(labelText: l.aiApiVersion),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: extraHeaders,
-                  minLines: 2,
-                  maxLines: 5,
-                  decoration: InputDecoration(labelText: l.aiExtraHeader),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: orgId,
-                        decoration: InputDecoration(labelText: l.aiOrg),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: projectId,
-                        decoration: InputDecoration(labelText: l.aiProject),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 if (message != null)
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -255,31 +192,24 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     ),
                     child: Text(message!),
                   ),
+                if (working) const LinearProgressIndicator(),
                 const SizedBox(height: 12),
-                Row(
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: testing ? null : _test,
-                        child: Text(l.aiTest),
-                      ),
+                    OutlinedButton(
+                      onPressed: working ? null : () => _save(test: true),
+                      child: Text(l.aiTest),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: testing ? null : _save,
-                        child: Text(l.saveLabel),
-                      ),
+                    FilledButton(
+                      onPressed: working ? null : _save,
+                      child: Text(l.saveLabel),
                     ),
                   ],
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Hinweis: Standard ist OpenAI-kompatibel Ã¼ber /chat/completions. OpenRouter, Groq, LM Studio, Ollama-Bridges und xAI funktionieren Ã¼ber Base URL + Modell, sofern sie diesen Endpunkt anbieten.',
                 ),
               ],
             ),
     );
   }
 }
-

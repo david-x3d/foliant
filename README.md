@@ -12,10 +12,10 @@ Foliant is an Android app built with Flutter for learning your own vocabulary se
 - Multiple-choice quiz
 - **Spelling/typing** with autocorrect disabled, live diff, typo/accent scoring, staged hints, and a language-dependent special-character bar
 - Mixed sessions with 0 / 50 / 100 % typing share
-- Camera import with grid, flash, crop, and on-device OCR (Google ML Kit)
+- Integrated full-screen camera with live preview, grid and flash, followed by cropping and on-device OCR (Google ML Kit)
 - Gallery and text import, always with review before saving
 - Optional AI pass for structured vocabulary pairs via configurable providers
-- AI configuration via display name, **Base URL**, model, API version, extra headers, org/project ID, and secure-storage key
+- AI settings with only four fields: **API endpoint**, **URL**, **model**, and **API key**
 - Real connection test: OpenAI-compatible via `POST {baseUrl}/chat/completions`, Google Gemini natively via `generativelanguage.googleapis.com/v1beta`
 - Drift/SQLite locally, Riverpod for state, go_router for navigation
 - Material 3 with Dynamic Color, surface-container depth, asymmetric shapes, and springy transitions
@@ -47,7 +47,7 @@ flutter run
 
 ### Camera / OCR
 
-Foliant is Android-only. `CAMERA` and `INTERNET` are set in the Android manifest; gallery selection uses the system picker. The project sets `minSdk 23`, matching the CameraX integration in use.
+Foliant is Android-only. `CAMERA` and `INTERNET` are set in the Android manifest; gallery selection uses the system picker. The current APK requires Android 7.0 (API 24) or later. The camera stays inside Foliant; it does not launch the phone camera app.
 
 ## AI Providers
 
@@ -65,15 +65,15 @@ API keys are stored exclusively via `flutter_secure_storage`. They belong neithe
 
 - Base URL: `https://openrouter.ai/api/v1`
 - Model: an OpenRouter model ID
-- Optional required headers can be added in the JSON field **Extra headers**.
+- Select **OpenAI-compatible** as the API endpoint.
 
 ### Google Gemini
 
-- In **More → AI providers**, select the **Google Gemini** preset.
+- In **More → AI providers**, select **Google Gemini** in the **API endpoint** field.
 - Base URL: `https://generativelanguage.googleapis.com/v1beta`
 - Default model: `gemini-2.5-flash` (freely changeable)
 - Foliant uses the native `models/{model}:generateContent` endpoint and passes the API key via `x-goog-api-key`.
-- JSON import uses `responseMimeType: application/json` with Gemini.
+- JSON import uses `responseMimeType: application/json` with Gemini. Thinking and output budgets are handled automatically; truncated or blocked responses produce a specific error.
 
 ### Ollama / local bridge
 
@@ -123,29 +123,23 @@ Shared infrastructure lives under `lib/core/`, Drift under `lib/data/local/`. UI
 
 ## Release
 
-After a successful local build and tests:
+Download the APK from [GitHub Releases](https://github.com/david-x3d/foliant/releases/latest).
+
+To build and publish an update:
 
 ```bash
-gh auth status
-
-gh repo create David-x3d/foliant \
-  --public \
-  --source=. \
-  --remote=origin \
-  --description "Foliant — Vocabulary from book pages. Flashcards, typing practice, AI import." \
-  --push
-
-git tag -a v0.1.0 -m "Foliant 0.1.0 — first usable version"
-git push origin v0.1.0
+flutter pub get
+flutter analyze
+flutter test
+flutter build apk --release
+git push origin main
+git tag -a v0.1.1 -m "Foliant 0.1.1"
+git push origin v0.1.1
+gh release create v0.1.1 build/app/outputs/flutter-apk/app-release.apk \
+  --title "Foliant 0.1.1" --notes-file RELEASE_NOTES.md
 ```
 
-Release:
-
-```bash
-gh release create v0.1.0 \
-  --title "Foliant 0.1.0" \
-  --notes-file RELEASE_NOTES.md
-```
+The current GitHub APK uses the same development signing key as 0.1.0, so it can be installed as an update. It is not a Play Store build.
 
 ## Summary
 
@@ -156,4 +150,3 @@ Foliant is a Flutter vocabulary app with flashcards, active typing practice, an 
 MIT – see [LICENSE](LICENSE).
 
 **Author:** David-x3d
-```

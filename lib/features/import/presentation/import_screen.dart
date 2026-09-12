@@ -30,30 +30,91 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   String? status;
 
   @override
+  void initState() {
+    super.initState();
+    // Recover gallery selections if Android reclaimed Foliant during picking.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recoverPhoto());
+  }
+
+  Future<void> _recoverPhoto() async {
+    if (!mounted || busy || !Platform.isAndroid) return;
+    setState(() => busy = true);
+    try {
+      final lost = await ImagePicker().retrieveLostData();
+      if (!mounted || lost.isEmpty) return;
+      if (lost.exception != null) throw lost.exception!;
+      final files = lost.files;
+      if (files != null && files.isNotEmpty) {
+        await _cropAndRecognize(files.first.path);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => status =
+              'Das letzte Foto konnte nicht wiederhergestellt werden. Bitte erneut aufnehmen.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
   void dispose() {
     textController.dispose();
     super.dispose();
   }
 
   Future<void> _gallery() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 94,
-      maxWidth: 3000,
-    );
-    if (picked == null) return;
-    await _cropAndRecognize(picked.path);
+    if (busy) return;
+    setState(() {
+      busy = true;
+      status = null;
+    });
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 94,
+        maxWidth: 3000,
+      );
+      if (!mounted || picked == null) return;
+      await _cropAndRecognize(picked.path);
+    } catch (_) {
+      if (mounted) {
+        setState(() => status = 'Das Bild konnte nicht geöffnet werden.');
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
   Future<void> _camera() async {
-    final path = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
-    );
-    if (path != null) await _cropAndRecognize(path);
+    if (busy) return;
+    setState(() {
+      busy = true;
+      status = null;
+    });
+    try {
+      final path = await Navigator.of(context, rootNavigator: true)
+          .push<String>(
+            MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
+          );
+      if (!mounted || path == null) return;
+      await _cropAndRecognize(path);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => status =
+              'Das Foto konnte nicht importiert werden. Bitte erneut versuchen.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
   Future<void> _cropAndRecognize(String path) async {
+    if (!mounted) return;
     setState(() {
       busy = true;
       status = null;
@@ -61,6 +122,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     try {
       final cropped = await ImageCropper().cropImage(
         sourcePath: path,
+        maxWidth: 3000,
+        maxHeight: 3000,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Buchseite zuschneiden',
@@ -69,19 +132,30 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           IOSUiSettings(title: 'Buchseite zuschneiden'),
         ],
       );
-      final finalPath = cropped?.path ?? path;
+      if (!mounted || cropped == null) return;
+      final finalPath = cropped.path;
       final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
       try {
         final result = await recognizer.processImage(
           InputImage.fromFile(File(finalPath)),
         );
+        if (!mounted) return;
         textController.text = result.text;
+        if (result.text.trim().isEmpty) {
+          setState(
+            () => status =
+                'Kein Text erkannt. Bitte die Seite scharf und gut beleuchtet fotografieren.',
+          );
+          return;
+        }
         await _prepareReview(sourceImagePath: finalPath);
       } finally {
         await recognizer.close();
       }
     } catch (_) {
-      setState(() => status = AppLocalizations.of(context)!.importOcrFailed);
+      if (mounted) {
+        setState(() => status = AppLocalizations.of(context)!.importOcrFailed);
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
