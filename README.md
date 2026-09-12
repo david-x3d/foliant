@@ -1,40 +1,40 @@
 # Foliant
 
-**Vokabeln von der Seite in den Kopf.**
+**Vocabulary from the page into your head.**
 
-Foliant ist eine Android-App auf Flutter-Basis zum Lernen eigener Vokabelsets. Sie verbindet klassische Karteikarten mit aktivem Schreibtraining, einem nachvollziehbaren SRS und dem Import von Buchseiten per Kamera und On-Device-OCR. KI ist optional: Ohne API-Key bleibt Foliant vollstÃ¤ndig offline nutzbar.
+Foliant is an Android app built with Flutter for learning your own vocabulary sets. It combines classic flashcards with active typing practice, a transparent SRS, and book-page import via camera and on-device OCR. AI is optional: without an API key, Foliant remains fully usable offline.
 
 ## Features
 
-- Lernsprachen u. a. Englisch, FranzÃ¶sisch, Spanisch, Italienisch, NiederlÃ¤ndisch, Portugiesisch, Polnisch, TÃ¼rkisch, Arabisch, Japanisch, Chinesisch, Koreanisch, Russisch, Latein und Griechisch
-- Lernrichtung als First-Class-Einstellung: **Fremdsprache â†’ Deutsch** oder **Deutsch â†’ Fremdsprache**
-- Karteikarten mit Flip, Swipe und SM-2-artigem SRS
-- Multiple-Choice-Quiz
-- **Schreibweise/Tippen** mit deaktiviertem Autocorrect, Live-Diff, Tippfehler-/Akzentbewertung, stufenweisen Hinweisen und sprachabhÃ¤ngiger Sonderzeichenleiste
-- Gemischte Sessions mit 0 / 50 / 100 % Tipp-Anteil
-- Kamera-Import mit Raster, Blitz, Crop und On-Device-OCR (Google ML Kit)
-- Galerie- und Textimport, immer mit Review vor dem Speichern
-- Optionaler KI-Pass fÃ¼r strukturierte Vokabelpaare Ã¼ber konfigurierbare Anbieter
-- KI-Konfiguration Ã¼ber Anzeigename, **Base URL**, Modell, API-Version, Extra-Header, Org-/Project-ID und Secure-Storage-Key
-- Echter Verbindungstest: OpenAI-kompatibel Ã¼ber `POST {baseUrl}/chat/completions`, Google Gemini nativ Ã¼ber `generativelanguage.googleapis.com/v1beta`
-- Drift/SQLite lokal, Riverpod fÃ¼r State, go_router fÃ¼r Navigation
-- Material 3 mit Dynamic Color, Surface-Container-Tiefe, asymmetrischen Formen und federnden Transitions
-- Hell/Dunkel/System und Dynamic Color
-- Set-Export und -Import als JSON
-- Demo-Set **Englisch Basics**, damit Lernen und Tippen nach dem Start sofort ausprobiert werden kÃ¶nnen
+- Learning languages including English, French, Spanish, Italian, Dutch, Portuguese, Polish, Turkish, Arabic, Japanese, Chinese, Korean, Russian, Latin, and Greek
+- Learning direction as a first-class setting: **Foreign language → German** or **German → Foreign language**
+- Flashcards with flip, swipe, and SM-2-like SRS
+- Multiple-choice quiz
+- **Spelling/typing** with autocorrect disabled, live diff, typo/accent scoring, staged hints, and a language-dependent special-character bar
+- Mixed sessions with 0 / 50 / 100 % typing share
+- Camera import with grid, flash, crop, and on-device OCR (Google ML Kit)
+- Gallery and text import, always with review before saving
+- Optional AI pass for structured vocabulary pairs via configurable providers
+- AI configuration via display name, **Base URL**, model, API version, extra headers, org/project ID, and secure-storage key
+- Real connection test: OpenAI-compatible via `POST {baseUrl}/chat/completions`, Google Gemini natively via `generativelanguage.googleapis.com/v1beta`
+- Drift/SQLite locally, Riverpod for state, go_router for navigation
+- Material 3 with Dynamic Color, surface-container depth, asymmetric shapes, and springy transitions
+- Light/Dark/System and Dynamic Color
+- Set export and import as JSON
+- Demo set **English Basics**, so learning and typing can be tried immediately after launch
 
 ## Screenshots
 
-Screenshots liegen bzw. kÃ¶nnen abgelegt werden unter:
+Screenshots are or can be placed under:
 
 `docs/screenshots/`
 
 ## Setup
 
-Voraussetzungen:
+Prerequisites:
 
-- Flutter stable (Projektstand: Flutter 3.47.x / Dart 3.13.x oder kompatibel)
-- Android Studio mit Android SDK fÃ¼r Android-Builds
+- Flutter stable (project state: Flutter 3.47.x / Dart 3.13.x or compatible)
+- Android Studio with Android SDK for Android builds
 
 ```bash
 flutter pub get
@@ -45,41 +45,41 @@ flutter test
 flutter run
 ```
 
-### Kamera / OCR
+### Camera / OCR
 
-Foliant ist Android-only. `CAMERA` und `INTERNET` sind im Android-Manifest gesetzt; Galerieauswahl nutzt den systemeigenen Picker. Das Projekt setzt `minSdk 23`, passend zur verwendeten CameraX-Integration.
+Foliant is Android-only. `CAMERA` and `INTERNET` are set in the Android manifest; gallery selection uses the system picker. The project sets `minSdk 23`, matching the CameraX integration in use.
 
-## KI-Anbieter
+## AI Providers
 
-KI ist **optional**. Manuelles Lernen, Drift-Datenbank und On-Device-OCR funktionieren ohne Netz und ohne API-Key.
+AI is **optional**. Manual learning, the Drift database, and on-device OCR work without a network connection and without an API key.
 
-API-Keys werden ausschlieÃŸlich Ã¼ber `flutter_secure_storage` gespeichert. Sie gehÃ¶ren weder in Shared Preferences noch in Logs, `.env` oder Git.
+API keys are stored exclusively via `flutter_secure_storage`. They belong neither in Shared Preferences nor in logs, `.env`, or Git.
 
 ### OpenAI
 
 - Base URL: `https://api.openai.com/v1`
-- Modell z. B.: `gpt-4o-mini` oder `gpt-4.1-mini`
-- API-Key in der App unter **Mehr â†’ KI-Anbieter**
+- Model e.g.: `gpt-4o-mini` or `gpt-4.1-mini`
+- API key in the app under **More → AI providers**
 
 ### OpenRouter
 
 - Base URL: `https://openrouter.ai/api/v1`
-- Modell: eine OpenRouter-Modell-ID
-- Optional kÃ¶nnen notwendige Header im JSON-Feld **Extra-Header** ergÃ¤nzt werden.
+- Model: an OpenRouter model ID
+- Optional required headers can be added in the JSON field **Extra headers**.
 
 ### Google Gemini
 
-- In **Mehr â†’ KI-Anbieter** das Preset **Google Gemini** auswÃ¤hlen.
+- In **More → AI providers**, select the **Google Gemini** preset.
 - Base URL: `https://generativelanguage.googleapis.com/v1beta`
-- Modell-Voreinstellung: `gemini-2.5-flash` (frei Ã¤nderbar)
-- Foliant verwendet dafÃ¼r nativ `models/{model}:generateContent` und Ã¼bergibt den API-Key Ã¼ber `x-goog-api-key`.
-- JSON-Import nutzt bei Gemini `responseMimeType: application/json`.
+- Default model: `gemini-2.5-flash` (freely changeable)
+- Foliant uses the native `models/{model}:generateContent` endpoint and passes the API key via `x-goog-api-key`.
+- JSON import uses `responseMimeType: application/json` with Gemini.
 
-### Ollama / lokale Bridge
+### Ollama / local bridge
 
-Foliant erwartet standardmÃ¤ÃŸig einen OpenAI-kompatiblen `chat/completions`-Endpunkt. Mit einer Ollama-/LM-Studio-Bridge kann z. B. eine lokale Base URL eingetragen werden. Auf einem echten Smartphone muss die URL vom GerÃ¤t aus erreichbar sein; `localhost` zeigt dort auf das Smartphone selbst.
+Foliant expects an OpenAI-compatible `chat/completions` endpoint by default. With an Ollama/LM Studio bridge, a local Base URL can be entered. On a real smartphone the URL must be reachable from the device; `localhost` points to the phone itself.
 
-### Antwortformat beim Vokabel-Import
+### Response format for vocabulary import
 
 ```json
 {
@@ -99,31 +99,31 @@ Foliant erwartet standardmÃ¤ÃŸig einen OpenAI-kompatiblen `chat/completions`
 }
 ```
 
-Unsichere Ergebnisse werden im Review markiert. Der System-Prompt verlangt ausdrÃ¼cklich, keine fehlenden Paare zu erfinden.
+Uncertain results are marked in review. The system prompt explicitly requires not inventing missing pairs.
 
-## Architektur
+## Architecture
 
-Feature-first unter `lib/features/`:
+Feature-first under `lib/features/`:
 
-- `learning/` â€“ Session, Tipp-Engine, Diff und SRS
-- `library/` â€“ Sets
-- `import/` â€“ Kamera, Crop, OCR, Textimport, Review
-- `ai/` â€“ Provider-Konfiguration, OpenAI-kompatibler Client und nativer Google-Gemini-Adapter
-- `settings/` â€“ persistente Lern-/Darstellungsregeln und JSON-Transfer
-- `onboarding/` â€“ Sprache, Richtung, Tipp-Anteil, optionale KI
+- `learning/` – session, typing engine, diff, and SRS
+- `library/` – sets
+- `import/` – camera, crop, OCR, text import, review
+- `ai/` – provider configuration, OpenAI-compatible client, and native Google Gemini adapter
+- `settings/` – persistent learning/display rules and JSON transfer
+- `onboarding/` – language, direction, typing share, optional AI
 
-Gemeinsame Infrastruktur liegt unter `lib/core/`, Drift unter `lib/data/local/`. UI-Strings werden Ã¼ber Flutter ARB/l10n vorbereitet (`lib/l10n/`).
+Shared infrastructure lives under `lib/core/`, Drift under `lib/data/local/`. UI strings are prepared via Flutter ARB/l10n (`lib/l10n/`).
 
-## Datenschutz / Secrets
+## Privacy / Secrets
 
-- Kein API-Key wird committed.
-- `.env` und typische Secret-/Keystore-Dateien sind in `.gitignore` ausgeschlossen.
-- `.env.example` enthÃ¤lt nur Dokumentationswerte und wird von der App nicht als Key-Speicher verwendet.
-- OCR lÃ¤uft lokal auf dem GerÃ¤t. Nur wenn der Nutzer bewusst einen KI-Pass ausfÃ¼hrt, wird der eingegebene/erkannte Text an den konfigurierten Anbieter gesendet.
+- No API key is committed.
+- `.env` and typical secret/keystore files are excluded in `.gitignore`.
+- `.env.example` contains documentation values only and is not used by the app as a key store.
+- OCR runs locally on the device. Only when the user deliberately runs an AI pass is the entered/recognized text sent to the configured provider.
 
 ## Release
 
-Nach erfolgreichem lokalen Build und Tests:
+After a successful local build and tests:
 
 ```bash
 gh auth status
@@ -132,10 +132,10 @@ gh repo create David-x3d/foliant \
   --public \
   --source=. \
   --remote=origin \
-  --description "Foliant â€” Vokabeln aus Buchseiten. Karteikarten, Tipp-Schreibweise, KI-Import." \
+  --description "Foliant — Vocabulary from book pages. Flashcards, typing practice, AI import." \
   --push
 
-git tag -a v0.1.0 -m "Foliant 0.1.0 â€” erste nutzbare Version"
+git tag -a v0.1.0 -m "Foliant 0.1.0 — first usable version"
 git push origin v0.1.0
 ```
 
@@ -147,14 +147,13 @@ gh release create v0.1.0 \
   --notes-file RELEASE_NOTES.md
 ```
 
-## English
+## Summary
 
-Foliant is a Flutter vocabulary app with flashcards, active typing practice, an SM-2-like SRS, camera/gallery import with on-device OCR, review-before-save, JSON backup/restore and optional configurable AI through an OpenAI-compatible Base URL. The app remains fully usable offline without an API key.
+Foliant is a Flutter vocabulary app with flashcards, active typing practice, an SM-2-like SRS, camera/gallery import with on-device OCR, review-before-save, JSON backup/restore, and optional configurable AI through an OpenAI-compatible Base URL. The app remains fully usable offline without an API key.
 
-## Lizenz
+## License
 
-MIT â€“ siehe [LICENSE](LICENSE).
+MIT – see [LICENSE](LICENSE).
 
-**Autor:** David-x3d
-
-
+**Author:** David-x3d
+```
